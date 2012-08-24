@@ -25,10 +25,13 @@ export SPARK_MEM=3g
 export SPARK_JAVA_OPTS="-Dspark.local.dir=/tmp -Dspark.kryoserializer.buffer.mb=10  -verbose:gc -XX:-PrintGCDetails -XX:+PrintGCTimeStamps"
 
 # HIVE_HOME, point to Hive binary distribution
-export HIVE_HOME=""
+export HIVE_HOME="/opt/hive/"
 
 # Point to your Scala installation.
-export SCALA_HOME=""
+export SCALA_HOME="/opt/scala-2.9.1-1/"
+
+export HADOOP_HOME="/opt/hadoop/"
+export MASTER="sparrow@localhost:20503"
 
 # Set these options when running through spark-ec2 scripts
 #export MASTER=`cat /root/mesos-ec2/cluster-url`
@@ -39,4 +42,3 @@ export SCALA_HOME=""
 # The following is only needed for development and testing (SBT test uses this).
 #export HIVE_DEV_HOME=""
 #export HIVE_HOME=$HIVE_DEV_HOME/build/dist
-
