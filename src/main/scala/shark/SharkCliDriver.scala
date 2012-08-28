@@ -62,6 +62,7 @@ object SharkCliDriver {
 
     // set all properties specified via command line
     val conf:HiveConf = ss.getConf()
+    conf.set("mapred.job.tracker", "notlocal")
     ss.cmdProperties.entrySet().foreach { item: java.util.Map.Entry[Object, Object] =>
       conf.set(item.getKey().asInstanceOf[String], item.getValue().asInstanceOf[String])
     }
