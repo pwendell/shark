@@ -48,7 +48,7 @@ object Column {
 
 
 abstract class Column {
-  val initialSize = 1000000 // Number of rows
+  val initialSize = 100 // Number of rows
   val nulls = new EWAHCompressedBitmap()
   var nullsIter: IntIterator = null
   var nextNullIndex = -1
@@ -57,7 +57,7 @@ abstract class Column {
 
   def add(o: Object, oi: ObjectInspector)
 
-  def close(): Unit 
+  def close(): Unit
 }
 
 
@@ -67,7 +67,7 @@ class BooleanColumn extends Column {
   val w = new BooleanWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -89,7 +89,7 @@ class BooleanColumn extends Column {
     nullsIter = nulls.intIterator
     nextNullIndex = -1
     arr.trim()
-  }  
+  }
 }
 
 
@@ -99,7 +99,7 @@ class ByteColumn extends Column {
   val w = new ByteWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -121,7 +121,7 @@ class ByteColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -131,7 +131,7 @@ class ShortColumn extends Column {
   val w = new ShortWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -153,7 +153,7 @@ class ShortColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -163,7 +163,7 @@ class IntColumn extends Column {
   val w = new IntWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -174,7 +174,7 @@ class IntColumn extends Column {
 
   override def add(o: Object, oi: ObjectInspector) {
     if (o == null) {
-      nulls.set(arr.size) 
+      nulls.set(arr.size)
       arr.add(0)
     } else {
       arr.add(oi.asInstanceOf[IntObjectInspector].get(o))
@@ -185,7 +185,7 @@ class IntColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -195,7 +195,7 @@ class LongColumn extends Column {
   val w = new LongWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -217,7 +217,7 @@ class LongColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -227,7 +227,7 @@ class FloatColumn extends Column {
   val w = new FloatWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -249,7 +249,7 @@ class FloatColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -259,7 +259,7 @@ class DoubleColumn extends Column {
   val w = new DoubleWritable()
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
@@ -281,7 +281,7 @@ class DoubleColumn extends Column {
     nextNullIndex = -1
     nullsIter = nulls.intIterator
     arr.trim()
-  }  
+  }
 }
 
 
@@ -294,7 +294,7 @@ class StringColumn extends Column {
   starts.add(0)
 
   override def apply(i: Int) = {
-    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next() 
+    while(nullsIter.hasNext && nextNullIndex < i) nextNullIndex = nullsIter.next()
     if (nextNullIndex == i) {
       null
     } else {
