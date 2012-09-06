@@ -56,14 +56,16 @@ class FileSinkOperator extends TerminalOperator with Serializable {
 
   def setConfParams(conf: HiveConf, context: TaskContext) {
     val jobID = context.stageId
-    val splitID = context.splitId 
+    val splitID = context.splitId
     val jID = HadoopWriter.createJobID(now, jobID)
     val taID = new TaskAttemptID(new TaskID(jID, true, splitID), 0)
     conf.set("mapred.job.id", jID.toString)
-    conf.set("mapred.tip.id", taID.getTaskID.toString) 
+    conf.set("mapred.tip.id", taID.getTaskID.toString)
     conf.set("mapred.task.id", taID.toString)
     conf.setBoolean("mapred.task.is.map", true)
     conf.setInt("mapred.task.partition", splitID)
+    conf.setInt("dfs.block.size", 134217728);
+    conf.setInt("dfs.blocksize", 134217728);
   }
 
   override def processPartition[T](iter: Iterator[T]): Iterator[_] = {
@@ -110,7 +112,7 @@ object FileSinkOperator {
 class CacheSinkOperator(@BeanProperty var tableName: String) extends TerminalOperator {
 
   def this() = this(null)
- 
+
   override def processPartition[T](iter: Iterator[T]): Iterator[_] = {
     RDDUtils.serialize(
         iter,
