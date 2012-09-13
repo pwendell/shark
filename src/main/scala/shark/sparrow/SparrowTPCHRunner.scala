@@ -23,18 +23,18 @@ object SparrowTPCHRunner {
     val delayMs = args(1).toInt
     val statements = lines.split(";");
 
-    if (statements.size < 6) {
-      println("Expecting at least 6 statements to create denorm table")
+    if (statements.size < 8) {
+      println("Expecting at least 8 statements to create denorm table")
       System.exit(-1)
     }
     val sc = new SharkContext(System.getenv("MASTER"), "unusedFrameworkName")
     SharkEnv.sc = sc
 
-    val denormCreateStatements = statements.slice(0, 5)
+    val denormCreateStatements = statements.slice(0, 8)
     for (stmt <- denormCreateStatements) {
       sc.sql(stmt)
     }
-    val queries = statements.slice(6, statements.length)
+    val queries = statements.slice(8, statements.length)
     val pool = new ScheduledThreadPoolExecutor(10) // Up to 10 outstanding queries
     var cumulativeDelay = 0;
     for (q <- queries) {
