@@ -4,6 +4,7 @@ import shark.SharkContext
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import shark.SharkEnv
+import spark.Logging
 
 /**
  * Given a workload file, runs TPCH queries at a regular rate.
@@ -35,7 +36,7 @@ object SparrowTPCHRunner {
       sc.sql(stmt)
     }
     val queries = statements.slice(8, statements.length)
-    val pool = new ScheduledThreadPoolExecutor(20) // Up to 10 outstanding queries
+    val pool = new ScheduledThreadPoolExecutor(50) // Up to 10 outstanding queries
     var cumulativeDelay = 0;
     for (q <- queries) {
       pool.schedule(new QueryLaunchRunnable(sc, q), cumulativeDelay, TimeUnit.MILLISECONDS)
@@ -45,8 +46,9 @@ object SparrowTPCHRunner {
   }
 }
 
-class QueryLaunchRunnable(sc : SharkContext, query: String) extends Runnable {
+class QueryLaunchRunnable(sc : SharkContext, query: String) extends Runnable with Logging {
   def run() {
+    logInfo("THREAD:" + Thread.currentThread().getId() + " QUERY:" + query.replace("\n", ""))
     sc.sql(query)
   }
 }
