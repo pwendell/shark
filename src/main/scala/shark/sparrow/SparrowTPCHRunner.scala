@@ -35,7 +35,7 @@ object SparrowTPCHRunner {
       sc.sql(stmt)
     }
     val queries = statements.slice(8, statements.length)
-    val pool = new ScheduledThreadPoolExecutor(10) // Up to 10 outstanding queries
+    val pool = new ScheduledThreadPoolExecutor(20) // Up to 10 outstanding queries
     var cumulativeDelay = 0;
     for (q <- queries) {
       pool.schedule(new QueryLaunchRunnable(sc, q), cumulativeDelay, TimeUnit.MILLISECONDS)
