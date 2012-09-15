@@ -17,6 +17,8 @@ object SparrowTPCHRunner {
       println("Expecting file name and query rate in arguments.")
       System.exit(-1);
     }
+    val startDelayMs = 250 * 1000
+    val t0 = System.currentTimeMillis()
     val source = scala.io.Source.fromFile(args(0))
     val lines = source.mkString
     source.close()
@@ -36,8 +38,11 @@ object SparrowTPCHRunner {
       sc.sql(stmt)
     }
     val queries = statements.slice(8, statements.length)
-    val pool = new ScheduledThreadPoolExecutor(50) // Up to 10 outstanding queries
+    val pool = new ScheduledThreadPoolExecutor(20) // Up to 20 outstanding queries
     var cumulativeDelay = 0;
+    while (System.currentTimeMillis() - t0 < startDelayMs) {
+      Thread.sleep(100)
+    }
     for (q <- queries) {
       pool.schedule(new QueryLaunchRunnable(sc, q), cumulativeDelay, TimeUnit.MILLISECONDS)
       cumulativeDelay += delayMs
