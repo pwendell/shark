@@ -20,9 +20,9 @@ class SharkContext(
     sparkHome: String = null,
     jars: Seq[String] = Nil)
   extends SparkContext(master, frameworkName, sparkHome, jars) {
-  
+
   val hiveconf = new HiveConf(classOf[SessionState])
-  
+
   //SessionState.initHiveLog4j()
   val sessionState = new SessionState(hiveconf)
   sessionState.out = new PrintStream(System.out, true, "UTF-8")
@@ -40,7 +40,7 @@ class SharkContext(
     val proc = CommandProcessorFactory.get(tokens(0), hiveconf)
 
     SessionState.start(sessionState)
-    
+
     if (proc.isInstanceOf[Driver]) {
       val driver: Driver =
         if (SharkConfVars.getVar(hiveconf, SharkConfVars.EXEC_MODE) == "shark") {
@@ -52,14 +52,14 @@ class SharkContext(
 
       val results = new ArrayList[String]()
       driver.run(cmd)
-      driver.getResults(results)
+      //driver.getResults(results)
       results
     } else {
       sessionState.out.println(tokens(0) + " " + cmd_1)
       Seq(proc.run(cmd_1).getResponseCode().toString)
     }
   }
-  
+
   /**
    * Execute the command and return the results as a TableRDD.
    */
