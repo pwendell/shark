@@ -17,13 +17,18 @@ object SparrowTPCHRunner {
       println("Expecting file name and query rate in arguments.")
       System.exit(-1);
     }
-    val startDelayMs = 250 * 1000
+    val startDelayMs = 300 * 1000
     val t0 = System.currentTimeMillis()
     val source = scala.io.Source.fromFile(args(0))
     val lines = source.mkString
     source.close()
 
     val delayMs = args(1).toInt
+
+    // We start with warm up queries
+    val warmUpDelayMs = 2000
+    val warmUpQueries = 50
+
     val statements = lines.split(";");
 
     if (statements.size < 8) {
@@ -43,9 +48,15 @@ object SparrowTPCHRunner {
     while (System.currentTimeMillis() - t0 < startDelayMs) {
       Thread.sleep(100)
     }
+    var iterNum = 0
     for (q <- queries) {
+      iterNum = iterNum + 1
       pool.schedule(new QueryLaunchRunnable(sc, q), cumulativeDelay, TimeUnit.MILLISECONDS)
-      cumulativeDelay += delayMs
+      if (iterNum < warmUpQueries) {
+        cumulativeDelay += warmUpDelayMs
+      } else {
+        cumulativeDelay += delayMs
+      }
     }
     println("Finished denormalized table creation")
   }
