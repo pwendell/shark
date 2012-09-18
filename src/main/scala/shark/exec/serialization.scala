@@ -4,6 +4,8 @@ import java.beans.{XMLDecoder, XMLEncoder, PersistenceDelegate}
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectOutput, ObjectInput}
 import java.nio.ByteBuffer
 
+import com.ning.compress.lzf.{LZFEncoder, LZFDecoder}
+
 import org.apache.hadoop.hive.ql.exec.Utilities.EnumDelegate
 import org.apache.hadoop.hive.ql.plan.GroupByDesc
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes
@@ -15,7 +17,7 @@ import shark.LogHelper
  * A wrapper around our operators so they can be serialized by standard Java
  * serialization. This really just delegates the serialization of the operators
  * to XML, and that of object inspectors to Kryo.
- * 
+ *
  * Use OperatorSerializationWrapper(operator) to create a wrapper.
  */
 class OperatorSerializationWrapper[T <: Operator[_ <: HiveOperator]]
@@ -70,18 +72,19 @@ object OperatorSerializationWrapper {
 object XmlSerializer {
 
   def serialize[T](o: T): Array[Byte] = {
-    val out = new ByteArrayOutputStream()
-    val e = new XMLEncoder(out)
+    val byteStream = new ByteArrayOutputStream()
+    val e = new XMLEncoder(byteStream)
     // workaround for java 1.5
     e.setPersistenceDelegate(classOf[ExpressionTypes], new EnumDelegate())
     e.setPersistenceDelegate(classOf[GroupByDesc.Mode], new EnumDelegate())
     e.writeObject(o)
     e.close()
-    out.toByteArray()    
+    LZFEncoder.encode(byteStream.toByteArray())
   }
 
   def deserialize[T](bytes: Array[Byte]): T  = {
-    val d: XMLDecoder = new XMLDecoder(new ByteArrayInputStream(bytes))
+    val decodedStream = new ByteArrayInputStream(LZFDecoder.decode(bytes))
+    val d: XMLDecoder = new XMLDecoder(decodedStream)
     val ret = d.readObject()
     d.close()
     ret.asInstanceOf[T]
@@ -113,7 +116,7 @@ object KryoSerializer extends shark.LogHelper {
 /**
  * A wrapper around some unserializable objects that make them both Java
  * serializable. Internally, Kryo is used for serialization.
- * 
+ *
  * Use KryoSerializationWrapper(value) to create a wrapper.
  */
 class KryoSerializationWrapper[T] extends Serializable {
@@ -146,7 +149,7 @@ class KryoSerializationWrapper[T] extends Serializable {
 }
 
 
-object KryoSerializationWrapper {  
+object KryoSerializationWrapper {
   def apply[T](value: T): KryoSerializationWrapper[T] = {
     val wrapper = new KryoSerializationWrapper[T]
     wrapper.value = value
