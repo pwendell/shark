@@ -22,7 +22,7 @@ export SPARK_MEM=3g
 
 # Java options
 # On EC2, change the local.dir to /mnt/tmp
-export SPARK_JAVA_OPTS="-Dspark.local.dir=/tmp -Dspark.kryoserializer.buffer.mb=10  -verbose:gc -XX:-PrintGCDetails -XX:+PrintGCTimeStamps -Dsparrow.app.name=spark_`hostname -i`"
+export SPARK_JAVA_OPTS="-Dspark.local.dir=/tmp -Dspark.kryoserializer.buffer.mb=10  -verbose:gc -XX:-PrintGCDetails -XX:+PrintGCTimeStamps -Dsparrow.app.name=spark_`hostname -i` -XX:+UseConcMarkSweepGC"
 
 # HIVE_HOME, point to Hive binary distribution
 export HIVE_HOME="/opt/hive/"
