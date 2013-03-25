@@ -18,7 +18,7 @@
 export SCALA_VERSION=2.9.1
 
 # Set Spark's memory per machine -- you might want to increase this
-export SPARK_MEM=3g
+export SPARK_MEM=15g
 
 # Java options
 # On EC2, change the local.dir to /mnt/tmp
