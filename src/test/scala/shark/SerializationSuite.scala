@@ -1,12 +1,13 @@
 package shark
 
-import execution.ReduceKey
-import org.scalatest.FunSuite
-import shark.execution.serialization.ShuffleSerializer
-import org.apache.hadoop.io.BytesWritable
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
-import org.scalatest.matchers.ShouldMatchers
+
 import com.ning.compress.lzf.{LZFInputStream, LZFOutputStream}
+import org.apache.hadoop.io.BytesWritable
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+import shark.execution.ReduceKey
+import shark.execution.serialization.ShuffleSerializer
 
 class SerializationSuite extends FunSuite with ShouldMatchers {
   test("Serializing and deserializing from a stream") {
@@ -58,7 +59,6 @@ class SerializationSuite extends FunSuite with ShouldMatchers {
     serStream.close()
     val array = bos.toByteArray
     val bis = new ByteArrayInputStream(array)
-    println("Total bytes serialized: " + array.length)
     val cBis = new LZFInputStream(bis)
     val serInStream = ser.newInstance().deserializeStream(cBis)
 
