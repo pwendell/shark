@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.session.SessionState
 
 import shark.execution.TableRDD
 import spark.{SparkContext, SparkEnv}
-
+import spark.scheduler.StatsReportListener
 
 class SharkContext(
     master: String,
@@ -48,6 +48,7 @@ class SharkContext(
   @transient val sessionState = new SessionState(hiveconf)
   sessionState.out = new PrintStream(System.out, true, "UTF-8")
   sessionState.err = new PrintStream(System.out, true, "UTF-8")
+  addSparkListener(new StatsReportListener())
 
   /**
    * Execute the command and return the results as a sequence. Each element
