@@ -21,16 +21,12 @@ import java.io.{InputStream, OutputStream}
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.io.BytesWritable
-
 import shark.execution.ReduceKey
-
 import spark.serializer.{DeserializationStream, Serializer, SerializerInstance, SerializationStream}
-
 
 class ShuffleSerializer extends Serializer {
   override def newInstance(): SerializerInstance = new ShuffleSerializerInstance
 }
-
 
 class ShuffleSerializerInstance extends SerializerInstance {
 
@@ -50,15 +46,14 @@ class ShuffleSerializerInstance extends SerializerInstance {
   }
 }
 
-
 class ShuffleSerializationStream(stream: OutputStream) extends SerializationStream {
 
   override def writeObject[T](t: T): SerializationStream = {
     val pair = t.asInstanceOf[(ReduceKey, BytesWritable)]
     val keyLen = pair._1.getLength()
     val valueLen = pair._2.getLength()
-    writeInt(keyLen)
-    writeInt(valueLen)
+    writeUnsignedVarInt(keyLen)
+    writeUnsignedVarInt(valueLen)
     stream.write(pair._1.getBytes(), 0, keyLen)
     stream.write(pair._2.getBytes(), 0, valueLen)
     this
@@ -68,23 +63,24 @@ class ShuffleSerializationStream(stream: OutputStream) extends SerializationStre
 
   override def close(): Unit = stream.close()
 
-  def writeInt(value: Int) {
-    stream.write(value >> 24)
-    stream.write(value >> 16)
-    stream.write(value >> 8)
-    stream.write(value)
+  def writeUnsignedVarInt(value: Int) {
+    var v = value
+    while ((v & 0xFFFFFF80) != 0L) {
+      stream.write((v & 0x7F) | 0x80)
+      v = v >>> 7
+    }
+    stream.write(v & 0x7F)
   }
 }
-
 
 class ShuffleDeserializationStream(stream: InputStream) extends DeserializationStream {
 
   override def readObject[T](): T = {
-    val keyLen = readInt()
+    val keyLen = readUnsignedVarInt()
     if (keyLen < 0) {
       throw new java.io.EOFException
     }
-    val valueLen = readInt()
+    val valueLen = readUnsignedVarInt()
     val keyBytes = new BytesWritable(new Array[Byte](keyLen))
     readFully(stream, keyBytes.getBytes, keyLen)
     val valueBytes = new BytesWritable(new Array[Byte](valueLen))
@@ -101,7 +97,21 @@ class ShuffleDeserializationStream(stream: InputStream) extends DeserializationS
 
   override def close() = stream.close()
 
-  def readInt(): Int = {
-    stream.read() << 24 | stream.read() << 16 | stream.read() << 8 | stream.read()
+  def readUnsignedVarInt(): Int = {
+    var value: Int = 0
+    var i: Int = 0
+    def readOrThrow(): Int = {
+      val in = stream.read()
+      if (in < 0) throw new java.io.EOFException
+      return in & 0xFF
+    }
+    var b: Int = readOrThrow()
+    while ((b & 0x80) != 0) {
+      value |= (b & 0x7F) << i
+      i += 7
+      if (i > 35) throw new IllegalArgumentException("Variable length quantity is too long")
+      b = readOrThrow()
+    }
+    value | (b << i)
   }
 }

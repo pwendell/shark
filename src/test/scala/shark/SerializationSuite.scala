@@ -7,9 +7,28 @@ import org.apache.hadoop.io.BytesWritable
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import shark.execution.ReduceKey
-import shark.execution.serialization.ShuffleSerializer
+import execution.serialization.{ShuffleDeserializationStream, ShuffleSerializationStream, ShuffleSerializer}
 
 class SerializationSuite extends FunSuite with ShouldMatchers {
+  test("Encoding and decoding variable ints") {
+    val check = List[Int](0, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000)
+
+    val bos = new ByteArrayOutputStream()
+    val ser = new ShuffleSerializer()
+    val serOutStream = ser.newInstance().serializeStream(bos).asInstanceOf[ShuffleSerializationStream]
+    for (i <- check) {
+      serOutStream.writeUnsignedVarInt(i)
+    }
+    serOutStream.close();
+
+    val bis = new ByteArrayInputStream(bos.toByteArray)
+    val serInStream = ser.newInstance().deserializeStream(bis).asInstanceOf[ShuffleDeserializationStream]
+    for (in <- check) {
+      val out: Int = serInStream.readUnsignedVarInt();
+      assert(out == in, "Encoded: " + in + " did not match decoded: " + out)
+    }
+  }
+
   test("Serializing and deserializing from a stream") {
     val NUM_ITEMS = 5000
     val KEY_SIZE = 1000
