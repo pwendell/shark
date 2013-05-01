@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Regents of The University California. 
+ * Copyright (C) 2012 The Regents of The University California.
  * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -141,10 +141,7 @@ class JoinOperator extends CommonJoinOperator[JoinDesc, HiveJoinOperator]
 
   def generateTuples(iter: Iterator[Array[Any]]): Iterator[_] = {
     val tupleOrder = CommonJoinOperator.computeTupleOrder(joinConditions)
-
-    val bytes = new BytesWritable()
     val tmp = new Array[Object](2)
-
     val tupleSizes = (0 until joinVals.size).map { i => joinVals.get(i.toByte).size() }.toIndexedSeq
     val offsets = tupleSizes.scanLeft(0)(_ + _)
 
@@ -154,15 +151,14 @@ class JoinOperator extends CommonJoinOperator[JoinDesc, HiveJoinOperator]
     iter.map { elements: Array[Any] =>
       var index = 0
       while (index < numTables) {
-        val element = elements(index).asInstanceOf[Array[Byte]]
+        val bytes = elements(index).asInstanceOf[BytesWritable]
         var i = 0
-        if (element == null) {
+        if (bytes == null) {
           while (i < joinVals.get(index.toByte).size) {
             outputRow(i + offsets(index)) = null
             i += 1
           }
         } else {
-          bytes.set(element, 0, element.length)
           tmp(1) = tagToValueSer.get(index).deserialize(bytes)
           val joinVal = joinVals.get(index.toByte)
           while (i < joinVal.size) {
